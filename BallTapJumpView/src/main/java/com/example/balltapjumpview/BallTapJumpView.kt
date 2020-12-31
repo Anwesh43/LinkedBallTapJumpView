@@ -147,8 +147,10 @@ class BallTapJumpView(ctx : Context) : View(ctx) {
         fun update(cb : (Float) -> Unit) {
             balls.forEach {
                 it.update {
-                    cb(it)
                     balls.remove(0)
+                    if (balls.size == 0) {
+                        cb(it)
+                    }
                 }
             }
         }
@@ -157,6 +159,26 @@ class BallTapJumpView(ctx : Context) : View(ctx) {
             balls.add(BTJNode(i++, x, y))
             if (balls.size == 1) {
                 cb()
+            }
+        }
+    }
+
+    data class Renderer(var view : BallTapJumpView) {
+        private val animator : Animator = Animator(view)
+        private val ballTapJumpList :  BallTapJumpList = BallTapJumpList(0)
+
+        fun render(canvas : Canvas, paint : Paint) {
+            canvas.drawColor(backColor)
+            animator.animate {
+                ballTapJumpList.update {
+                    animator.stop()
+                }
+            }
+        }
+
+        fun handleTap(x : Float, y : Float) {
+            ballTapJumpList.startUpdating(x, y) {
+                animator.start()
             }
         }
     }
