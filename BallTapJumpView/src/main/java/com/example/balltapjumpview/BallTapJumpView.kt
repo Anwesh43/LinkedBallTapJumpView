@@ -7,6 +7,7 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.app.Activity
 import android.content.Context
+import android.util.Log
 import java.util.concurrent.ConcurrentLinkedQueue
 
 val backColor : Int = Color.parseColor("#BDBDBD")
@@ -19,8 +20,8 @@ val colors : Array<Int> = arrayOf(
 ).map {
    Color.parseColor(it)
 }.toTypedArray()
-val delay : Long = 20
-val sizeFactor : Float = 5.9f
+val delay : Long = 6
+val sizeFactor : Float = 12.3f
 val strokeFactor : Float = 90f
 val parts : Int = 3
 val scGap : Float = 0.02f / parts
@@ -29,13 +30,13 @@ val scGap : Float = 0.02f / parts
 fun Int.inverse() : Float = 1f / this
 fun Float.maxScale(i : Int, n : Int) : Float  = Math.max(0f, this - i * n.inverse())
 fun Float.divideScale(i : Int, n : Int) : Float = Math.min(n.inverse(), maxScale(i, n)) * n
-fun Float.sinify() : Float = Math.sin(this * Math.PI).toFloat()
+
 
 fun Canvas.drawBallTapJumper(scale : Float, w : Float, h : Float, x : Float, y : Float, paint : Paint) {
     val sc1 : Float = scale.divideScale(0, parts)
     val sc2 : Float = scale.divideScale(1, parts)
     val sc3 : Float = scale.divideScale(2, parts)
-    val r : Float = Math.min(w, h) / sizeFactor
+    val r : Float = x / sizeFactor
     save()
     drawCircle(r + (x - r) * sc2, y + (h - y + r) * sc3, r * sc1, paint)
     drawLine(0f, y, x * (sc2 - sc3), y, paint)
@@ -72,7 +73,7 @@ class BallTapJumpView(ctx : Context) : View(ctx) {
     data class State(var scale : Float = 0f, var dir : Float = 0f, var prevScale : Float = 0f) {
 
         fun update(cb : (Float) -> Unit) {
-            scale += scGap
+            scale += scGap * dir
             if (Math.abs(scale - prevScale) > 1) {
                 scale = prevScale + dir
                 dir = 0f
@@ -135,6 +136,8 @@ class BallTapJumpView(ctx : Context) : View(ctx) {
         fun startUpdating(cb : () -> Unit) {
             state.startUpdating(cb)
         }
+
+        override fun hashCode() : Int = i
     }
 
     data class BallTapJumpList(var i : Int) {
@@ -148,9 +151,10 @@ class BallTapJumpView(ctx : Context) : View(ctx) {
         }
 
         fun update(cb : (Float) -> Unit) {
-            balls.forEach {
-                it.update {
-                    balls.remove(0)
+            balls.forEach { ball : BTJNode ->
+                ball.update {
+                    balls.remove(ball)
+                    Log.d("ball size", "${balls.size}")
                     if (balls.size == 0) {
                         cb(it)
                     }
@@ -159,10 +163,14 @@ class BallTapJumpView(ctx : Context) : View(ctx) {
         }
 
         fun startUpdating(x : Float, y : Float, cb : () -> Unit) {
-            balls.add(BTJNode(i++, x, y))
-            if (balls.size == 1) {
-                cb()
+            val ball : BTJNode = BTJNode(i++, x, y)
+            ball.startUpdating {
+                balls.add(ball)
+                if (balls.size == 1) {
+                    cb()
+                }
             }
+
         }
     }
 
@@ -172,6 +180,7 @@ class BallTapJumpView(ctx : Context) : View(ctx) {
 
         fun render(canvas : Canvas, paint : Paint) {
             canvas.drawColor(backColor)
+            ballTapJumpList.draw(canvas, paint)
             animator.animate {
                 ballTapJumpList.update {
                     animator.stop()
