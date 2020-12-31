@@ -53,14 +53,17 @@ fun Canvas.drawBTJNode(i : Int, scale : Float, x : Float, y : Float, paint : Pai
 
 class BallTapJumpView(ctx : Context) : View(ctx) {
 
-    override fun onDraw(canvas : Canvas) {
+    private val renderer : Renderer = Renderer(this)
+    private val paint : Paint = Paint(Paint.ANTI_ALIAS_FLAG)
 
+    override fun onDraw(canvas : Canvas) {
+        renderer.render(canvas, paint)
     }
 
     override fun onTouchEvent(event : MotionEvent) : Boolean {
         when (event.action) {
             MotionEvent.ACTION_DOWN -> {
-
+                renderer.handleTap(event.x, event.y)
             }
         }
         return true
@@ -180,6 +183,15 @@ class BallTapJumpView(ctx : Context) : View(ctx) {
             ballTapJumpList.startUpdating(x, y) {
                 animator.start()
             }
+        }
+    }
+
+    companion object {
+
+        fun create(activity : Activity) : BallTapJumpView {
+            val view : BallTapJumpView = BallTapJumpView(activity)
+            activity.setContentView(view)
+            return view
         }
     }
 }
