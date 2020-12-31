@@ -1,0 +1,3 @@
+include ':BallTapJumpView'
+include ':app'
+rootProject.name = "LinkedBallTapJumpView"
