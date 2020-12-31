@@ -112,4 +112,24 @@ class BallTapJumpView(ctx : Context) : View(ctx) {
             }
         }
     }
+
+    data class BTJNode(
+        private var i : Int,
+        private var x : Float,
+        private var y : Float,
+        private val state : State = State()
+    ) {
+
+        fun draw(canvas : Canvas, paint : Paint) {
+            canvas.drawBTJNode(i, state.scale, x, y, paint)
+        }
+
+        fun update(cb : (Float) -> Unit) {
+            state.update(cb)
+        }
+
+        fun startUpdating(cb : () -> Unit) {
+            state.startUpdating(cb)
+        }
+    }
 }
