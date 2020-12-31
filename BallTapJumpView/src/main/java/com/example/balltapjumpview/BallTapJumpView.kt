@@ -47,3 +47,19 @@ fun Canvas.drawBTJNode(i : Int, scale : Float, x : Float, y : Float, paint : Pai
     paint.strokeWidth = Math.min(w, h) / strokeFactor
     drawBallTapJumper(scale, w, h, x, y, paint)
 }
+
+class BallTapJumpView(ctx : Context) : View(ctx) {
+
+    override fun onDraw(canvas : Canvas) {
+
+    }
+
+    override fun onTouchEvent(event : MotionEvent) : Boolean {
+        when (event.action) {
+            MotionEvent.ACTION_DOWN -> {
+
+            }
+        }
+        return true
+    }
+}
