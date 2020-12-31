@@ -7,6 +7,7 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.app.Activity
 import android.content.Context
+import java.util.concurrent.ConcurrentLinkedQueue
 
 val backColor : Int = Color.parseColor("#BDBDBD")
 val colors : Array<Int> = arrayOf(
@@ -130,6 +131,33 @@ class BallTapJumpView(ctx : Context) : View(ctx) {
 
         fun startUpdating(cb : () -> Unit) {
             state.startUpdating(cb)
+        }
+    }
+
+    data class BallTapJumpList(var i : Int) {
+
+        private var balls : ConcurrentLinkedQueue<BTJNode> = ConcurrentLinkedQueue()
+
+        fun draw(canvas : Canvas, paint : Paint) {
+            balls.forEach {
+                it.draw(canvas, paint)
+            }
+        }
+
+        fun update(cb : (Float) -> Unit) {
+            balls.forEach {
+                it.update {
+                    cb(it)
+                    balls.remove(0)
+                }
+            }
+        }
+
+        fun startUpdating(x : Float, y : Float, cb : () -> Unit) {
+            balls.add(BTJNode(i++, x, y))
+            if (balls.size == 1) {
+                cb()
+            }
         }
     }
 }
